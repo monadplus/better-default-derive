@@ -1,0 +1,5 @@
+error: #[derive(Default)] is only supported for enums
+ --> tests/bad/01-struct.rs:8:8
+  |
+8 | struct A {
+  |        ^
