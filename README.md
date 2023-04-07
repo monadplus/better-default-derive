@@ -1,4 +1,4 @@
-# better-default-derive ![crates.io](https://img.shields.io/crates/v/better-default-derive.svg) ![github actions badge](https://github.com/monadplus/better-default-derive/actions/workflows/ci.yml/badge.svg)
+# better-default-derive [![crates.io](https://img.shields.io/crates/v/better-default-derive.svg)](https://crates.io/crates/better-default-derive) [![github actions badge](https://github.com/monadplus/better-default-derive/actions/workflows/ci.yml/badge.svg)](https://github.com/monadplus/better-default-derive/actions/workflows/ci.yml)
 
 A better [std::default::Default](https://doc.rust-lang.org/nightly/std/default/macro.Default.html) macro.
 
