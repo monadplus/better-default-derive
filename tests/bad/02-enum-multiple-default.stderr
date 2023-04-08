@@ -1,5 +1,5 @@
 error: #[default] is defined more than once
-  --> tests/bad/03-more-than-one.rs:16:5
+  --> tests/bad/02-enum-multiple-default.rs:16:5
    |
 16 | /     #[default]
 17 | |     B(B)

@@ -1,51 +1,76 @@
-use std::{collections::HashSet, fmt::Display};
+use std::collections::HashSet;
 
 use proc_macro::TokenStream;
-use quote::{quote, ToTokens};
-use syn::{parse_macro_input, parse_quote, DeriveInput};
-
-fn compile_err<T: ToTokens, M: Display>(tokens: T, message: M) -> TokenStream {
-    let err = syn::Error::new_spanned(tokens, message);
-    err.into_compile_error().into()
-}
+use quote::quote;
+use syn::{parse_macro_input, parse_quote, DataEnum, DataStruct, DeriveInput};
 
 #[proc_macro_derive(Default, attributes(default))]
 pub fn derive(input: TokenStream) -> TokenStream {
+    let output = match __derive(parse_macro_input!(input as DeriveInput)) {
+        Ok(output) => output,
+        Err(err) => err.into_compile_error().into(),
+    };
+    proc_macro::TokenStream::from(output)
+}
+
+fn __derive(input: DeriveInput) -> Result<proc_macro2::TokenStream, syn::Error> {
     let DeriveInput {
         attrs: _,
         vis: _,
-        ident: struct_ident,
+        ident: input_ident,
         mut generics,
         data,
-    } = parse_macro_input!(input as DeriveInput);
+    } = input;
 
-    let variants = match data {
-        syn::Data::Enum(enm) => enm.variants,
-        _other => {
-            return compile_err(
-                struct_ident,
-                "#[derive(Default)] is only supported for enums",
-            );
+    let (body, fields) = match data {
+        syn::Data::Struct(data) => struct_case(data),
+        syn::Data::Enum(data) => enum_case(&input_ident, data),
+        syn::Data::Union(_) => Err(syn::Error::new_spanned(
+            &input_ident,
+            "#[derive(Default)] is only supported for unions",
+        )),
+    }?;
+
+    add_trait_bounds(&mut generics, &fields);
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+
+    let output = quote! {
+        impl #impl_generics std::default::Default for #input_ident #ty_generics #where_clause {
+            fn default() -> Self {
+                #body
+            }
         }
     };
 
-    if variants.is_empty() {
-        return compile_err(
-            struct_ident,
+    Ok(output)
+}
+
+fn struct_case(data: DataStruct) -> Result<(proc_macro2::TokenStream, syn::Fields), syn::Error> {
+    todo!()
+}
+
+fn enum_case(
+    root_ident: &syn::Ident,
+    data: DataEnum,
+) -> Result<(proc_macro2::TokenStream, syn::Fields), syn::Error> {
+    if data.variants.is_empty() {
+        return Err(syn::Error::new_spanned(
+            root_ident,
             "#[derive(Default)] is not supported for empty enums",
-        );
+        ));
     }
 
-    let mut default_variants = variants
+    let mut default_variants = data
+        .variants
         .into_iter()
         .filter(|variant| has_default_attr(variant).unwrap_or_default());
 
     if let Some(default_variant) = default_variants.next() {
         if let Some(another_default_variant) = default_variants.next() {
-            return compile_err(
+            return Err(syn::Error::new_spanned(
                 another_default_variant,
                 "#[default] is defined more than once",
-            );
+            ));
         }
 
         let variant_ident = default_variant.ident.clone();
@@ -78,20 +103,12 @@ pub fn derive(input: TokenStream) -> TokenStream {
             }
         };
 
-        add_trait_bounds(&mut generics, &default_variant);
-        let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-
-        let output = quote! {
-            impl #impl_generics std::default::Default for #struct_ident #ty_generics #where_clause {
-                fn default() -> Self {
-                    #default_variant_constr
-                }
-            }
-        };
-
-        proc_macro::TokenStream::from(output)
+        Ok((default_variant_constr, default_variant.fields))
     } else {
-        compile_err(struct_ident, "expected one variant with #[default]")
+        Err(syn::Error::new_spanned(
+            root_ident,
+            "expected one variant with #[default]",
+        ))
     }
 }
 
@@ -101,9 +118,8 @@ fn has_default_attr(variant: &syn::Variant) -> Option<bool> {
     Some(is_default)
 }
 
-fn add_trait_bounds(generics: &mut syn::Generics, variant: &syn::Variant) {
-    let used_types: HashSet<syn::Ident> = variant
-        .fields
+fn add_trait_bounds(generics: &mut syn::Generics, fields: &syn::Fields) {
+    let used_types: HashSet<syn::Ident> = fields
         .iter()
         .filter_map(|field| type_ident(&field.ty))
         .cloned()
