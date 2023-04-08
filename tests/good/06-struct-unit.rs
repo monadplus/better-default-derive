@@ -1,9 +1,8 @@
-#[derive(Debug, PartialEq, Eq, better_default_derive::Default)]
-struct Foo(u8);
+use better_default_derive::Default;
 
-#[derive(Debug, PartialEq, Eq, better_default_derive::Default)]
-struct Bar(Foo);
+#[derive(Debug, PartialEq, Eq, Default)]
+struct Bar;
 
 fn main() {
-    assert_eq!(Bar::default(), Bar(Foo(u8::default())));
+    assert_eq!(Bar::default(), Bar);
 }

@@ -23,7 +23,7 @@ fn __derive(input: DeriveInput) -> Result<proc_macro2::TokenStream, syn::Error> 
     } = input;
 
     let (body, fields) = match data {
-        syn::Data::Struct(data) => struct_case(data),
+        syn::Data::Struct(data) => struct_case(&input_ident, data),
         syn::Data::Enum(data) => enum_case(&input_ident, data),
         syn::Data::Union(_) => Err(syn::Error::new_spanned(
             &input_ident,
@@ -45,8 +45,33 @@ fn __derive(input: DeriveInput) -> Result<proc_macro2::TokenStream, syn::Error> 
     Ok(output)
 }
 
-fn struct_case(data: DataStruct) -> Result<(proc_macro2::TokenStream, syn::Fields), syn::Error> {
-    todo!()
+fn struct_case(
+    struct_ident: &syn::Ident,
+    data: DataStruct,
+) -> Result<(proc_macro2::TokenStream, syn::Fields), syn::Error> {
+    let constr = match data.fields.clone() {
+        syn::Fields::Unit => quote!(#struct_ident),
+        syn::Fields::Unnamed(unnamed) => {
+            let fields_constr = unnamed.unnamed.into_iter().map(|field| {
+                let ty = field.ty;
+                quote!(#ty::default())
+            });
+            quote!(#struct_ident(#(#fields_constr),*))
+        }
+        syn::Fields::Named(named) => {
+            let fields_constr = named.named.into_iter().map(|field| {
+                let field_name = field.ident.expect("named fields should contain an ident");
+                let ty = &field.ty;
+                quote!(#field_name : #ty::default())
+            });
+
+            quote! {
+                #struct_ident{#(#fields_constr),*}
+            }
+        }
+    };
+
+    Ok((constr, data.fields))
 }
 
 fn enum_case(

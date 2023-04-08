@@ -1,4 +1,6 @@
-#[derive(Debug, PartialEq, Eq, better_default_derive::Default)]
+use better_default_derive::Default;
+
+#[derive(Debug, PartialEq, Eq, Default)]
 enum Letters {
     #[default]
     A, 

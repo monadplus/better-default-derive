@@ -1,5 +1,5 @@
 error: #[derive(Default)] is not supported for empty enums
- --> tests/bad/01-enum-empty.rs:2:6
+ --> tests/bad/01-enum-empty.rs:4:6
   |
-2 | enum Empty{}
+4 | enum Empty{}
   |      ^^^^^
