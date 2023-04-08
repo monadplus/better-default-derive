@@ -37,6 +37,18 @@ fn main() {
 }
 ```
 
+## Comparison to other libraries
+
+### [educe](https://crates.io/crates/educe)
+
+Advantages:
+- Support several built-in traits.
+- More popular.
+
+Disadvantages:
+- Not a drop-in replacement of the std.
+- Slower compile times.
+
 ## Roadmap
 
 - [ ] Better error message when a field is missing the `Default` instance.
