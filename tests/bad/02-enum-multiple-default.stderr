@@ -1,0 +1,6 @@
+error: #[default] is defined multiple times
+  --> tests/bad/02-enum-multiple-default.rs:18:5
+   |
+18 | /     #[default]
+19 | |     B(B)
+   | |________^

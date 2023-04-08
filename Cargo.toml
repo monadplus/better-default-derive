@@ -1,6 +1,6 @@
 [package]
 name = "better-default-derive"
-version = "0.1.0"
+version = "0.1.1"
 description = "A better Default macro"
 authors = ["Arnau Abella <arnau.abella@monadplus.pro"]
 edition = "2021"
@@ -22,3 +22,6 @@ syn = { version = "2.0" } #features = ["extra-traits"]
 
 [dev-dependencies]
 trybuild = { version = "1.0.49", features = ["diff"] }
+
+[build-dependencies]
+rustc_version = "0.2"

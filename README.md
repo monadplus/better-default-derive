@@ -1,13 +1,26 @@
-# better-default-derive ![crates.io](https://img.shields.io/crates/v/better-default-derive.svg) ![github actions badge](https://github.com/monadplus/better-default-derive/actions/workflows/ci.yml/badge.svg)
+# better-default-derive [![crates.io](https://img.shields.io/crates/v/better-default-derive.svg)](https://crates.io/crates/better-default-derive) [![github actions badge](https://github.com/monadplus/better-default-derive/actions/workflows/ci.yml/badge.svg)](https://github.com/monadplus/better-default-derive/actions/workflows/ci.yml)
 
 A better [std::default::Default](https://doc.rust-lang.org/nightly/std/default/macro.Default.html) macro.
+
+Supports:
+- Struct
+  - Unit
+  - Named
+  - Unnamed
+  - Generic
+- Enum
+  - Unit
+  - Named
+  - Unnamed
+  - Generic
+
+## Usage
 
 ```toml
 [dependencies]
 better-default-derive = "0.1.0"
 ```
 
-## Example
 ```rust 
 use better_default_derive::Default;
 
@@ -24,19 +37,21 @@ fn main() {
 }
 ```
 
-## Supports
-
-- Enums
-  - Unit
-  - Named
-  - Unnamed
-  - Generic
-
 ## Roadmap
 
-- [ ] Support structs
-  - [ ] Unit
-  - [ ] Named
-  - [ ] Unnamed
-  - [ ] Generic
+- [ ] Better error message when a field is missing the `Default` instance.
+- [ ] Support union types
 - [ ] Support associated types
+
+  ```rust
+  use better_default_derive::Default;
+
+  pub trait Trait {
+      type Value;
+  }
+
+  #[derive(Default)]
+  pub struct Field<T: Trait> {
+      values: Vec<T::Value>,
+  }
+  ```
