@@ -86,11 +86,16 @@ fn enum_case(
         }
 
         (Some(default_variant), Some(another_default_variant)) => {
-            let span = another_default_variant
-                .span()
-                .join(default_variant.span())
-                .expect("self and other ARE from the same file");
-            Err(Error::new(span, "#[default] is defined multiple times"))
+            let msg = "#[default] is defined multiple times";
+            if cfg!(nightly) {
+                let span = another_default_variant
+                    .span()
+                    .join(default_variant.span())
+                    .expect("self and other are not from the same file");
+                Err(Error::new(span, msg))
+            } else {
+                Err(Error::new_spanned(another_default_variant, msg))
+            }
         }
         (None, _) => Err(Error::new_spanned(
             root_ident,

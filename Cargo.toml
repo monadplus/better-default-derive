@@ -22,3 +22,6 @@ syn = { version = "2.0" } #features = ["extra-traits"]
 
 [dev-dependencies]
 trybuild = { version = "1.0.49", features = ["diff"] }
+
+[build-dependencies]
+rustc_version = "0.2"
